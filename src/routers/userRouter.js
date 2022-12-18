@@ -4,10 +4,11 @@ const User = require('../models/user')
 const auth = require('../middleware/auth')
 const jwt = require('jsonwebtoken')
 
-const router = new express.Router()
+// create express router
+const userRouter = new express.Router()
 
 // Add a new user
-router.post('/users', async (req, res) => {
+userRouter.post('/users', async (req, res) => {
     // check passwords match and remove retype
     if (req.body.password !== req.body.passwordRetype) {
         return res.status(400).send({ error: 'Passwords Must Match' , message: 'Passwords must match'})
@@ -30,7 +31,7 @@ router.post('/users', async (req, res) => {
 })
 
 // Logout a user
-router.post('/users/logout', auth, async (req, res) => {
+userRouter.post('/users/logout', auth, async (req, res) => {
     try {
         // remove current loginToken from token list
         req.user.loginTokens = req.user.loginTokens.filter((token) => {
@@ -46,7 +47,7 @@ router.post('/users/logout', auth, async (req, res) => {
 })
 
 // login a user
-router.post('/users/login', async (req, res) => {
+userRouter.post('/users/login', async (req, res) => {
     try {
         // find user with matching email and password
         const user = await User.findByEmailPassword(req.body.email, req.body.password)
@@ -61,13 +62,13 @@ router.post('/users/login', async (req, res) => {
 })
 
 // return user info
-router.get('/users/me', auth, async (req, res) => {
+userRouter.get('/users/me', auth, async (req, res) => {
     // return User selected in auth middleware
     res.send(req.user)
 })
 
 // modify user information
-router.patch('/users/me', auth, async(req, res) => {
+userRouter.patch('/users/me', auth, async(req, res) => {
     // get list of modifications to make to User
     const mods = req.body
     const properties = Object.keys(mods)
@@ -91,7 +92,7 @@ router.patch('/users/me', auth, async(req, res) => {
 })
 
 // delete user
-router.delete('/users/me', auth, async (req, res) => {
+userRouter.delete('/users/me', auth, async (req, res) => {
     try {
         // try delete user
         await req.user.deleteOne()
@@ -103,7 +104,7 @@ router.delete('/users/me', auth, async (req, res) => {
 })
 
 // send password reset email
-router.post('/users/pwReset', async (req, res) => {
+userRouter.post('/users/pwReset', async (req, res) => {
     try {
         // find User by email
         const user = await User.findByEmail(req.body.email)
@@ -120,7 +121,7 @@ router.post('/users/pwReset', async (req, res) => {
 })
 
 // reset password
-router.patch('/users/pwReset', async (req, res) => {
+userRouter.patch('/users/pwReset', async (req, res) => {
     try {
         // confirm identical passwords
         if (req.body.password !== req.body.passwordRetype) {
@@ -153,4 +154,5 @@ router.patch('/users/pwReset', async (req, res) => {
     }
 })
 
-module.exports = router
+// export router
+module.exports = userRouter

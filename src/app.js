@@ -14,8 +14,8 @@ app.use(function(req, res, next) {
 });
 
 // use routers
-const usersRouter = require('./routers/userRouter')
-app.use(usersRouter)
+app.use(require('./routers/userRouter'))
+app.use(require("./routers/teamRouter"))
 
 // listen on port
 const port = process.env.PORT
