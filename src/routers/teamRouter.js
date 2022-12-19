@@ -5,13 +5,13 @@ const espnQuery = require('../services/espnQuery')
 // create express router
 const teamRouter = new express.Router()
 
-// initialize or update teams list
+// UPDATE or INITIALIZE teams list
 teamRouter.post("/teams/update", async (req, res) => {
     try {
-        if (req.body.adminPW === process.env.ADMIN_PASSKEY) {
+        if (help.adminAuth(req.body.adminPW)) {
             espnQuery.updateTeams()
         } else {
-            throw "error starting update"
+            throw "error starting teams update"
         }
 
         res.status(200).send("update started, check logs for completion")
@@ -20,7 +20,7 @@ teamRouter.post("/teams/update", async (req, res) => {
     }
 })
 
-// get list of team
+// GET list of team
 teamRouter.get("/teams", async (req, res) => {
     try {
         // make sure only allowed queries are input
@@ -40,7 +40,7 @@ teamRouter.get("/teams", async (req, res) => {
     }
 })
 
-// get singular team
+// GET singular team
 teamRouter.get("/teams/one", async (req, res) => {
     try {
         // make sure a query key referencing single Team is included and all queries are allowed
@@ -60,8 +60,11 @@ teamRouter.get("/teams/one", async (req, res) => {
             throw `must include single team key {${singleTeamKeys}}`
         }
 
-        // use input query to find Teams and send
+        // use input query to find Team and send if found, else throw error
         team = await Team.findOne(req.query)
+        if (!team) {
+            throw `team ${JSON.stringify(req.query)} not found`
+        }
         res.status(200).send(team)
     } catch (e) {
         res.status(500).send(e)
