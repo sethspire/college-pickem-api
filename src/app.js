@@ -16,6 +16,7 @@ app.use(function(req, res, next) {
 // use routers
 app.use(require('./routers/userRouter'))
 app.use(require("./routers/teamRouter"))
+app.use(require("./routers/seasonRouter"))
 
 // listen on port
 const port = process.env.PORT

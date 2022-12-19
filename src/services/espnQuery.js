@@ -1,4 +1,5 @@
 const Team = require('../models/team')
+const Season = require('../models/season')
 const help = require('../utils/helper')
 
 // EXPORT: update or create DI teams
@@ -6,8 +7,7 @@ async function updateTeams() {
     teamBeingChecked = ""
     try {
         // get list of team URLs for all DI
-        const curDate = new Date()
-        const curSeasonYear = curDate.getFullYear() - (curDate.getMonth() < 3) // January-March are still part of season designated by previous calender year value
+        const curSeasonYear = help.getCurrentSeason()
         teamsResponseData = await help.fetchESPNdata(`https://sports.core.api.espn.com/v2/sports/football/leagues/college-football/seasons/${curSeasonYear}/types/2/groups/90/teams?limit=300`)
         teamsURLs = teamsResponseData.items
 
@@ -68,6 +68,61 @@ async function updateTeams() {
     }
 }
 
+// EXPORT: update or create a Season
+async function updateSeason(year) {
+    // make sure year is within range 2000-current
+    curYear = help.getCurrentSeason()
+    if (year < 2000 || year > curYear) {
+        throw `year not in range (2000-${curYear})`
+    }
+
+    // get list of weeks for that year
+    seasonURL = `https://sports.core.api.espn.com/v2/sports/football/leagues/college-football/seasons/${year}/types/2/weeks`
+    seasonEspnData = await help.fetchESPNdata(seasonURL)
+
+    // form season data
+    season = {
+        year: year,
+        numWeeks: seasonEspnData.count,
+        weekDates: []
+    }
+    
+    // get dates for each week
+    for (weekURL of seasonEspnData.items) {
+        weekEspnData = await help.fetchESPNdata(weekURL.$ref)
+        week = {
+            value: weekEspnData.number,
+            startDate: weekEspnData.startDate,
+            endDate: weekEspnData.endDate
+        }
+        season.weekDates = season.weekDates.concat(week)
+    }
+
+    // check if season exists, if yes then update, else create new season
+    seasonInDB = await Season.findOne({year: season.year})
+    if (!seasonInDB) {
+        // season doesn't exist yet
+        createdSeason = new Season(season)
+        await createdSeason.save()
+        return createdSeason
+    } else {
+        // season already exists
+        // for each key in new season request, change value if different and track if 
+        const seasonKeys = Object.keys(season)
+        changesMade = false
+        for (key of seasonKeys) {
+            if (seasonInDB[key] !== season[key]) {
+                seasonInDB[key] = season[key]
+                changesMade = true
+            }
+        }
+        if (changesMade) {
+            await seasonInDB.save()
+        }
+        return seasonInDB
+    }
+}
+
 // HELPER: get a team's conference
 async function getConference(curConfURL) {
     // essentially just go up level till find conference
@@ -99,5 +154,6 @@ async function getConference(curConfURL) {
 
 // export modules
 module.exports = {
-    updateTeams
+    updateTeams,
+    updateSeason
 }
