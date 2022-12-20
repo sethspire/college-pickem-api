@@ -1,6 +1,7 @@
 const Team = require('../models/team')
 const Season = require('../models/season')
 const help = require('../utils/helper')
+const _ = require("lodash")
 
 // EXPORT: update or create DI teams
 async function updateTeams() {
@@ -8,11 +9,10 @@ async function updateTeams() {
     try {
         // get list of team URLs for all DI
         const curSeasonYear = help.getCurrentSeason()
-        teamsResponseData = await help.fetchESPNdata(`https://sports.core.api.espn.com/v2/sports/football/leagues/college-football/seasons/${curSeasonYear}/types/2/groups/90/teams?limit=300`)
+        teamsResponseData = await help.fetchESPNdata(`https://sports.core.api.espn.com/v2/sports/football/leagues/college-football/seasons/${curSeasonYear}/types/2/groups/90/teams?limit=1`)
         teamsURLs = teamsResponseData.items
 
         // team by team
-        teams = []
         for (i in teamsURLs) {
             try {
                 //request team information from URL
@@ -37,27 +37,8 @@ async function updateTeams() {
                     console.log(teamBeingChecked + " has no group")
                 }
 
-                // check if team exists, if yes then update, else create new team
-                teamInDB = await Team.findOne({espn_id: team.espn_id, abbr: team.abbr})
-                if (!teamInDB) {
-                    // team doesn't exist yet
-                    createdTeam = new Team(team)
-                    await createdTeam.save()
-                    teams = teams.concat(createdTeam)
-                } else {
-                    // team already exists
-                    const teamProperties = Object.keys(team)
-                    changesMade = false
-                    teamProperties.forEach((property) => {
-                        if (teamInDB[property] !== team[property]) {
-                            teamInDB[property] = team[property]
-                            changesMade = true
-                        }
-                    })
-                    if (changesMade) {
-                        await teamInDB.save()
-                    }
-                }
+                // save team
+                await saveTeam(team)
             } catch (e) {
                 console.log(`FAILED WITH TEAM (${teamBeingChecked})`, e)
             }
@@ -98,29 +79,8 @@ async function updateSeason(year) {
         season.weekDates = season.weekDates.concat(week)
     }
 
-    // check if season exists, if yes then update, else create new season
-    seasonInDB = await Season.findOne({year: season.year})
-    if (!seasonInDB) {
-        // season doesn't exist yet
-        createdSeason = new Season(season)
-        await createdSeason.save()
-        return createdSeason
-    } else {
-        // season already exists
-        // for each key in new season request, change value if different and track if 
-        const seasonKeys = Object.keys(season)
-        changesMade = false
-        for (key of seasonKeys) {
-            if (seasonInDB[key] !== season[key]) {
-                seasonInDB[key] = season[key]
-                changesMade = true
-            }
-        }
-        if (changesMade) {
-            await seasonInDB.save()
-        }
-        return seasonInDB
-    }
+    // save season
+    return await saveSeason(season)
 }
 
 // HELPER: get a team's conference
@@ -150,7 +110,73 @@ async function getConference(curConfURL) {
             curConfURL = confResponseData.parent.$ref
         }
     }
-} 
+}
+
+// HELPER: save team
+async function saveTeam(team) {
+    // check if team exists, if yes then update, else create new team
+    teamInDB = await Team.findOne({espn_id: team.espn_id, abbr: team.abbr})
+    if (!teamInDB) {
+        // team doesn't exist yet
+        createdTeam = new Team(team)
+        await createdTeam.save()
+    } else {
+        // team already exists
+        // because teamInDB is a Team object, can't directly compare it to a regular JSON object, so need to get the JSON
+        teamInDB_json = JSON.parse(JSON.stringify(teamInDB))
+
+        // check if value of each key in new team req is same as that from DB, if not then change
+        const teamProperties = Object.keys(team)
+        changesMade = false
+        teamProperties.forEach((property) => {
+            if (!_.isEqual(teamInDB_json[property], team[property])) {
+                teamInDB[property] = team[property]
+                changesMade = true
+            }
+        })
+
+        // save new team  only if changes have been made
+        if (changesMade) {
+            await teamInDB.save()
+        }
+    }
+}
+
+// HELPER: save season
+async function saveSeason(season) {
+    // check if season exists, if yes then update, else create new season
+    seasonInDB = await Season.findOne({year: season.year})
+    if (!seasonInDB) {
+        // season doesn't exist yet
+        createdSeason = new Season(season)
+        await createdSeason.save()
+        return createdSeason
+    } else {
+        // season already exists
+        // need the JSON version to accurately compare to new data
+        seasonInDB_json = JSON.parse(JSON.stringify(seasonInDB))
+        // remove the _id from each weekDates entry in the JSON of seasonInDB
+        for (wk of seasonInDB_json.weekDates) {
+            delete wk._id
+        }
+
+        // for each key in new season request, change value if different and track if changes made
+        const seasonKeys = Object.keys(season)
+        changesMade = false
+        for (key of seasonKeys) {
+            if (!_.isEqual(seasonInDB_json[key], season[key])) {
+                seasonInDB[key] = season[key]
+                changesMade = true
+            }
+        }
+
+        // save and return
+        if (changesMade) {
+            await seasonInDB.save()
+        }
+        return seasonInDB
+    }
+}
 
 // export modules
 module.exports = {

@@ -9,21 +9,24 @@ const seasonRouter = new express.Router()
 // UPDATE or INITIALIZE a Season
 seasonRouter.post("/season/update", async (req, res) => {
     try {
+        // if req doesn't have a year, use current season
+        if (!req.body.year) {
+            req.body.year = help.getCurrentSeason()
+        }
+
         // only run if admin password is included
         if (help.adminAuth(req.body.adminPW)) {
-            // if a season's year is included in the body, use that year, else use current year
-            if (req.body.year) {
-                season = await espnQuery.updateSeason(req.body.year)
-            } else {
-                season = await espnQuery.updateSeason(help.getCurrentSeason())
-            }
+            // update season
+            season = await espnQuery.updateSeason(req.body.year)
         } else {
             throw "error starting season update"
         }
-
+        
+        // log result and send back season
+        console.log(`FINISHED UPDATING SEASON {${req.body.year}}`)
         res.status(200).send(season)
     } catch (e) {
-        console.log(e)
+        console.log(`FAILED UPDATING SEASON {${req.body.year}}`, e)
         res.status(400).send(e)
     }
 })
