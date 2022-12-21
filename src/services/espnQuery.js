@@ -123,7 +123,7 @@ async function saveTeam(team) {
     } else {
         // team already exists
         // because teamInDB is a Team object, can't directly compare it to a regular JSON object, so need to get the JSON
-        teamInDB_json = JSON.parse(JSON.stringify(teamInDB))
+        teamInDB_json = teamInDB.toObject()
 
         // check if value of each key in new team req is same as that from DB, if not then change
         const teamProperties = Object.keys(team)
@@ -154,7 +154,7 @@ async function saveSeason(season) {
     } else {
         // season already exists
         // need the JSON version to accurately compare to new data
-        seasonInDB_json = JSON.parse(JSON.stringify(seasonInDB))
+        seasonInDB_json = seasonInDB.toObject()
         // remove the _id from each weekDates entry in the JSON of seasonInDB
         for (wk of seasonInDB_json.weekDates) {
             delete wk._id
