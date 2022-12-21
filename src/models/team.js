@@ -39,6 +39,22 @@ const teamSchema = new Schema({
         parentEspn_id: {
             type: String
         }
+    },
+    venue: {
+        espn_id: {
+            type: String
+        },
+        name: {
+            type: String
+        },
+        address: {
+            city: {
+                type: String
+            },
+            state: {
+                type: String
+            }
+        }
     }
 })
 

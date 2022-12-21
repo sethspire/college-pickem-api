@@ -7,11 +7,13 @@ const _ = require("lodash")
 async function updateTeams() {
     teamBeingChecked = ""
     try {
-        // get list of team URLs for all DI
+        // get list of team URLs for all DI, both FBS(80) and FCS(81)
         const curSeasonYear = help.getCurrentSeason()
-        teamsResponseData = await help.fetchESPNdata(`https://sports.core.api.espn.com/v2/sports/football/leagues/college-football/seasons/${curSeasonYear}/types/2/groups/90/teams?limit=1`)
-        teamsURLs = teamsResponseData.items
-
+        //teamsResponseData = await help.fetchESPNdata(`https://sports.core.api.espn.com/v2/sports/football/leagues/college-football/seasons/${curSeasonYear}/types/2/groups/90/teams?limit=300`)
+        fbsTeamsResponseData = await help.fetchESPNdata("https://sports.core.api.espn.com/v2/sports/football/leagues/college-football/teams?group=80&limit=300")
+        fcsTeamsResponseData = await help.fetchESPNdata("https://sports.core.api.espn.com/v2/sports/football/leagues/college-football/teams?group=81&limit=300")
+        teamsURLs = fbsTeamsResponseData.items.concat(fcsTeamsResponseData.items)
+        
         // team by team
         for (i in teamsURLs) {
             try {
@@ -26,7 +28,21 @@ async function updateTeams() {
                     nickname: teamResponseData.name,
                     abbr: teamResponseData.abbreviation,
                     espn_id: teamResponseData.id,
-                    color: teamResponseData.color
+                    color: teamResponseData.color,
+                }
+
+                // get venue
+                if (teamResponseData.venue) {
+                    team.venue = {
+                        espn_id: teamResponseData.venue.id,
+                        name: teamResponseData.venue.fullName,
+                        address: {
+                            city: teamResponseData.venue.address.city,
+                            state: teamResponseData.venue.address.state
+                        }
+                    }
+                } else {
+                    console.log(teamBeingChecked + " has no venue")
                 }
 
                 // get conference
@@ -90,7 +106,14 @@ async function getConference(curConfURL) {
     while (!foundConf) {
         // fetch data and get parent ID
         confResponseData = await help.fetchESPNdata(curConfURL)
-        parentURL = confResponseData.parent.$ref
+        try {
+            parentURL = confResponseData.parent.$ref
+        } catch(e) {
+            console.log("mess up with parent id")
+            console.log("previous parentConfID: ", parentConfId)
+            console.log(parentURL)
+            throw "mess up with parent id"
+        }
         urlArr = parentURL.split("/")
         parentConfId = urlArr[urlArr.length - 1].split("?")[0]
 
