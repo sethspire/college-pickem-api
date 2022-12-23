@@ -9,6 +9,7 @@ const teamRouter = new express.Router()
 // UPDATE or INITIALIZE teams list
 teamRouter.post("/teams/update", async (req, res) => {
     try {
+        // update teams if have admin authorization
         if (help.adminAuth(req.body.adminPW)) {
             espnQuery.updateTeams()
         } else {

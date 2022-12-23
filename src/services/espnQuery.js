@@ -1,5 +1,6 @@
 const Team = require('../models/team')
 const Season = require('../models/season')
+const Game = require('../models/game')
 const help = require('../utils/helper')
 const _ = require("lodash")
 
@@ -99,7 +100,33 @@ async function updateSeason(year) {
     return await saveSeason(season)
 }
 
-// HELPER: get a team's conference
+// EXPORT: update or create a week of Games
+async function updateGameWeek(year, weekVal) {
+    try {
+        // get dates for that week
+        season = await Season.findOne({year: year})
+        if (!season) {
+            throw `season {${year}} does not exist`
+        }
+        week = (season.weekDates.filter(aWeek => aWeek.value == weekVal))[0]
+        weekStart = week.startDate
+        weekEnd = week.endDate
+        
+        // remove time and hyphens from times for YYYYMMDD format
+        startYYYYMMDD = weekStart.split("T")[0].replaceAll("-", "")
+        endYYYYMMDD = weekEnd.split("T")[0].replaceAll("-", "")
+        
+        // get list of games for the week for FBS (group 80)
+        weekGames = await help.fetchESPNdata(`https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?&limit=200&groups=80&dates=${startYYYYMMDD}-${endYYYYMMDD}`)
+
+        console.log(weekGames.events.length)
+        console.log(`FINISHED UPDATING GAME WEEK {${year}, ${weekVal}}`)
+    } catch (e) {
+        console.log(`FAILED TO UPDATE GAME WEEK {${year}, ${weekVal}}`, e)
+    }
+}
+
+// HELPER: get a team's conference for
 async function getConference(curConfURL) {
     // essentially just go up level till find conference
     foundConf = false
@@ -135,7 +162,7 @@ async function getConference(curConfURL) {
     }
 }
 
-// HELPER: save team
+// HELPER: save team to db
 async function saveTeam(team) {
     // check if team exists, if yes then update, else create new team
     teamInDB = await Team.findOne({espn_id: team.espn_id, abbr: team.abbr})
@@ -165,7 +192,7 @@ async function saveTeam(team) {
     }
 }
 
-// HELPER: save season
+// HELPER: save season to db
 async function saveSeason(season) {
     // check if season exists, if yes then update, else create new season
     seasonInDB = await Season.findOne({year: season.year})
@@ -204,5 +231,6 @@ async function saveSeason(season) {
 // export modules
 module.exports = {
     updateTeams,
-    updateSeason
+    updateSeason,
+    updateGameWeek
 }

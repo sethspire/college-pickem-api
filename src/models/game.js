@@ -10,11 +10,22 @@ const gameSchema = new Schema({
     datetime: {
         type: Date
     },
-    location: {
+    venue: {
+        espn_id: {
+            type: String
+        },
         name: {
             type: String
         },
-        isHomeStadium: {
+        address: {
+            city: {
+                type: String
+            },
+            state: {
+                type: String
+            }
+        },
+        isTrueHomeGame: {
             type: Boolean
         }
     },
@@ -24,14 +35,14 @@ const gameSchema = new Schema({
     status: {
         type: String
     },
-    winner: {
-        type: String
-    },
-    home: {
+    teams: [{
         team: {
             type: Schema.Types.ObjectId,
             required: true,
             ref: 'Team'
+        },
+        isHome: {
+            type: Boolean
         },
         score: {
             type: Number
@@ -53,34 +64,7 @@ const gameSchema = new Schema({
         winChance: {
             type: String
         }
-    },
-    away: {
-        team: {
-            type: Schema.Types.ObjectId,
-            required: true,
-            ref: 'Team'
-        },
-        score: {
-            type: Number
-        },
-        rank: {
-            poll: {
-                type: String
-            },
-            value: {
-                type: Number
-            }
-        },
-        spread: {
-            type: String
-        },
-        record: {
-            type: String
-        },
-        winChance: {
-            type: String
-        }
-    }
+    }]
 })
 
 // remove certain keys from the Game object
