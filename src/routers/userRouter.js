@@ -4,10 +4,12 @@ const User = require('../models/user')
 const auth = require('../middleware/auth')
 const jwt = require('jsonwebtoken')
 
+
 // create express router
 const userRouter = new express.Router()
 
-// Add a new user
+
+// ADD A NEW USER
 userRouter.post('/users', async (req, res) => {
     // check passwords match and remove retype
     if (req.body.password !== req.body.passwordRetype) {
@@ -30,7 +32,7 @@ userRouter.post('/users', async (req, res) => {
     }
 })
 
-// Logout a user
+// LOGOUT A USER
 userRouter.post('/users/logout', auth, async (req, res) => {
     try {
         // remove current loginToken from token list
@@ -46,7 +48,7 @@ userRouter.post('/users/logout', auth, async (req, res) => {
     }
 })
 
-// login a user
+// LOGIN A USER
 userRouter.post('/users/login', async (req, res) => {
     try {
         // find user with matching email and password
@@ -61,13 +63,13 @@ userRouter.post('/users/login', async (req, res) => {
     }
 })
 
-// return user info
+// RETURN USER INFO
 userRouter.get('/users/me', auth, async (req, res) => {
     // return User selected in auth middleware
     res.send(req.user)
 })
 
-// modify user information
+// MODIFY USER INFO
 userRouter.patch('/users/me', auth, async(req, res) => {
     // get list of modifications to make to User
     const mods = req.body
@@ -91,7 +93,7 @@ userRouter.patch('/users/me', auth, async(req, res) => {
     }
 })
 
-// delete user
+// DELETE USER
 userRouter.delete('/users/me', auth, async (req, res) => {
     try {
         // try delete user
@@ -103,7 +105,7 @@ userRouter.delete('/users/me', auth, async (req, res) => {
     }
 })
 
-// send password reset email
+// SEND PASSWORD RESET EMAIL
 userRouter.post('/users/pwReset', async (req, res) => {
     try {
         // find User by email
@@ -120,7 +122,7 @@ userRouter.post('/users/pwReset', async (req, res) => {
     }
 })
 
-// reset password
+// RESET PASSWORD
 userRouter.patch('/users/pwReset', async (req, res) => {
     try {
         // confirm identical passwords
@@ -154,5 +156,6 @@ userRouter.patch('/users/pwReset', async (req, res) => {
     }
 })
 
-// export router
+
+// EXPORT ROUTER
 module.exports = userRouter

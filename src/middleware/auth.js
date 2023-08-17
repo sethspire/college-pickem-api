@@ -23,8 +23,8 @@ const auth = async (req, res, next) => {
         })
         curDate = Date.now()
         diffMinutes = Math.round((curDate - usedToken.timestamp) / 60000)
-        minIn1Week = 60*24*7
-        if (diffMinutes >= minIn1Week) {
+        minIn1Month = 60*24*30 // min/hr * hr/day * day/month = min/month
+        if (diffMinutes >= minIn1Month) {
             throw 'Token Timed Out'
         }
 

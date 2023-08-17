@@ -1,0 +1,44 @@
+
+USER
+    [ ] route: create new user
+    [ ] route: login a user
+    [ ] route: logout a user
+    [ ] route: get info on a user
+    [ ] route: modify a user
+    [ ] route: delete a user
+    [ ] route: send password reset email
+    [ ] route: reset password
+    [ ] include groups
+
+GROUP
+
+PICKS
+
+
+
+TEAM
+    [X] model: abr, name, nickname, espn_id, logo url, stadium
+    [X] route: update/init team lists
+    [X] route: get list of teams matching query
+    [X] route: get single team matching query
+    [ ] logo urls: team-url JSON, upload photos, fetch url for each team
+    [ ] cron job
+
+SEASON
+    [X] model: # weeks, year, dates for each week
+    [X] route: update/init a season
+    [X] route: get season
+    [X] get current season
+    [ ] cron job
+
+GAME
+    [X] model: espn_id, datetime, location, home (score, rank, spread, team_id), away (score, rank, spread, team_id), network, status
+    [X] route: update/init a week of games
+    [X] route: update/init a single game
+    [X] route: get a week of games
+    [X] route: get a specific game
+    [ ] cron job
+
+
+OTHER
+    [ ] process.env.ADMIN_PASSKEY

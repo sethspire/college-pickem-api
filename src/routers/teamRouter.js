@@ -1,3 +1,15 @@
+/*
+    includes the routes for the team objects
+
+    Routes:
+        [X] update/init team lists
+        [X] get list of teams matching query
+        [X] get single team matching query
+
+    Todo:
+        [ ] logo urls: team-url JSON, upload photos, fetch url for each team
+*/
+
 const express = require('express')
 const Team = require('../models/team')
 const espnQuery = require('../services/espnQuery')

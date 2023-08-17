@@ -10,6 +10,12 @@ const gameSchema = new Schema({
     datetime: {
         type: Date
     },
+    week: {
+        type: Number
+    },
+    year: {
+        type: Number
+    },
     venue: {
         espn_id: {
             type: String
@@ -25,21 +31,24 @@ const gameSchema = new Schema({
                 type: String
             }
         },
-        isTrueHomeGame: {
+        isNeutralSite: {
             type: Boolean
         }
     },
     network: {
         type: String
     },
-    status: {
-        type: String
+    isCompleted: {
+        type: Boolean
     },
     teams: [{
-        team: {
+        team_id: {
             type: Schema.Types.ObjectId,
             required: true,
             ref: 'Team'
+        },
+        espn_id: {
+            type: String
         },
         isHome: {
             type: Boolean
@@ -47,22 +56,23 @@ const gameSchema = new Schema({
         score: {
             type: Number
         },
+        isWinner: {
+            type: Boolean
+        },
         rank: {
-            poll: {
-                type: String
-            },
-            value: {
-                type: Number
-            }
+            type: Number
+        },
+        isRanked: {
+            type: Boolean
         },
         spread: {
-            type: String
+            type: Number
         },
         record: {
             type: String
         },
         winChance: {
-            type: String
+            type: Number
         }
     }]
 })
