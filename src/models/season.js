@@ -20,7 +20,8 @@ const seasonSchema = new Schema({
             endDate: {
                 type: String
             }
-    }]
+        }
+    ],
 
 })
 

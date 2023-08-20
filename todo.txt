@@ -1,4 +1,3 @@
-
 USER
     [ ] route: create new user
     [ ] route: login a user
@@ -21,7 +20,7 @@ TEAM
     [X] route: update/init team lists
     [X] route: get list of teams matching query
     [X] route: get single team matching query
-    [ ] logo urls: team-url JSON, upload photos, fetch url for each team
+    [X] logo urls: team-url JSON, upload photos, fetch url for each team
     [ ] cron job
 
 SEASON

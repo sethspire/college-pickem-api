@@ -10,6 +10,9 @@ const gameSchema = new Schema({
     datetime: {
         type: Date
     },
+    dayOfWeek: {
+        type: String
+    },
     week: {
         type: Number
     },

@@ -3,6 +3,7 @@ const Season = require('../models/season')
 const Game = require('../models/game')
 const help = require('../utils/helper')
 const _ = require("lodash")
+const fs = require("fs")
 
 
 
@@ -18,6 +19,10 @@ async function updateTeams() {
         fbsTeamsResponseData = await help.fetchESPNdata("https://sports.core.api.espn.com/v2/sports/football/leagues/college-football/teams?group=80&limit=300")
         fcsTeamsResponseData = await help.fetchESPNdata("https://sports.core.api.espn.com/v2/sports/football/leagues/college-football/teams?group=81&limit=300")
         teamsURLs = fbsTeamsResponseData.items.concat(fcsTeamsResponseData.items)
+
+        // get list of logo file names
+        let rawLogoFiles = fs.readFileSync('src/data/logoFile.json');
+        let logoFiles = JSON.parse(rawLogoFiles);
         
         // team by team
         for (i in teamsURLs) {
@@ -56,6 +61,11 @@ async function updateTeams() {
                     team.conference = conf
                 } else {
                     console.log(teamBeingChecked + " has no group")
+                }
+
+                // add logo file name
+                if (logoFiles[teamResponseData.id]) {
+                    team.logoFile = logoFiles[teamResponseData.id]
                 }
 
                 // save team
@@ -201,7 +211,7 @@ async function getConference(curConfURL) {
 // HELPER: save team to db
 async function saveTeam(team) {
     // check if team exists, if yes then update, else create new team
-    teamInDB = await Team.findOne({espn_id: team.espn_id, abbr: team.abbr})
+    teamInDB = await Team.findOne({espn_id: team.espn_id})
     if (!teamInDB) {
         // team doesn't exist yet
         createdTeam = new Team(team)
@@ -220,6 +230,7 @@ async function saveTeam(team) {
                 changesMade = true
             }
         })
+        changesMade = true
 
         // save new team  only if changes have been made
         if (changesMade) {
@@ -273,9 +284,13 @@ async function getGame(gameID) {
         espn_id: gameID
     }
 
-    // date and time, error if not found
+    // dateTime and day of week, error if not found
     if (gameEvent.header.competitions.length > 0 && gameEvent.header.competitions[0].date) {
         game.datetime = gameEvent.header.competitions[0].date
+
+        dayOfWeekNum = (new Date(game.datetime)).getDay()
+        weekDays = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+        game.dayOfWeek = weekDays[dayOfWeekNum]
     } else {
         throw new Error(`required datetime not found (${gameEvent.shortName})`)
     }

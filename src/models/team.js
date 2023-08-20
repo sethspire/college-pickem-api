@@ -20,6 +20,9 @@ const teamSchema = new Schema({
         type: String,
         default: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Football_-_The_Noun_Project.svg/1000px-Football_-_The_Noun_Project.svg.png"
     },
+    logoFile: {
+        type: String,
+    },
     color: {
         type: String
     },
