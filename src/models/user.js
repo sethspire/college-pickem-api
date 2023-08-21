@@ -25,9 +25,16 @@ const userSchema = new Schema({
         minLength: 10
     },
     name: { 
-        type: String,
-        required: true,
-        trim: true
+        first: { 
+            type: String,
+            required: true,
+            trim: true
+        },
+        last: { 
+            type: String,
+            required: true,
+            trim: true
+        }
     },
     loginTokens: [{
         token: {
@@ -87,8 +94,8 @@ userSchema.pre('deleteOne', { document: true, query: false }, async function(nex
 userSchema.methods.generateAuthToken = async function () {
     const user = this
 
-    // if already 4 tokens, remove oldest
-    if (user.loginTokens.length >= 4) {
+    // if already 3 tokens, remove oldest
+    if (user.loginTokens.length >= 3) {
         user.loginTokens.shift()
     }
 
@@ -135,9 +142,6 @@ userSchema.statics.findByEmailPassword = async (email, password) => {
 userSchema.statics.findByEmail = async (email) => {  
     // finds User with matching email     
     const user = await User.findOne({email}) 
-    if (!user) { 
-        throw new Error('Unable to login') 
-    }
 
     return user 
 }

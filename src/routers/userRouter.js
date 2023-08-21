@@ -17,6 +17,12 @@ userRouter.post('/users', async (req, res) => {
     }
     delete req.body.passwordRetype
 
+    // ensure email does not already exist
+    const possibleUser = await User.findByEmail(req.body.email)
+    if (possibleUser) {
+        return res.status(400).send({ error: 'Email Already Exists' , message: 'Email already exists'})
+    }
+
     try {
         // save user
         const user = new User(req.body)
@@ -111,10 +117,20 @@ userRouter.post('/users/pwReset', async (req, res) => {
         // find User by email
         const user = await User.findByEmail(req.body.email)
 
-        // generate pw reset token and reset URL
-        const token = await user.generatePwResetAuthToken()
-        //reset_url = "thebreadcrumbs.herokuapp.com/Forgotten_Login_Pages/password_pages/HTML/reset_password.html?pwResetToken=" + token
-        //sendPwResetEmail(user.email, user.name, reset_url)
+        if (user) {
+            try {
+                // generate pw reset token and reset URL
+                const token = await user.generatePwResetAuthToken()
+                //reset_url = "thebreadcrumbs.herokuapp.com/Forgotten_Login_Pages/password_pages/HTML/reset_password.html?pwResetToken=" + token
+                //sendPwResetEmail(user.email, user.name, reset_url)
+            }
+            catch (e) {
+                console.log(`ERROR SENDING USER PW RESET EMAIL for {${req.body.email}}: ${e}`)
+            }
+        } else {
+            console.log(`ERROR SENDING USER PW RESET EMAIL for {${req.body.email}}: user does not exist`)
+        }
+
         res.status(201).send()
     } 
     catch (e) {    
@@ -145,11 +161,16 @@ userRouter.patch('/users/pwReset', async (req, res) => {
             throw new Error('URL Timed Out')
         }
 
-        // change password
+        // change password and remove previous tokens
         user.password = req.body.password
+        user.loginTokens = []
+        user.pwResetToken = {}
         await user.save()
 
-        res.status(200).send(user)
+        // generate authorization token
+        const token = await user.generateAuthToken()
+
+        res.status(201).send({user, token})
     } 
     catch (e) {    
         res.status(400).send(e)

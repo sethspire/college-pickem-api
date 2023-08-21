@@ -1,13 +1,16 @@
 USER
-    [ ] route: create new user
-    [ ] route: login a user
-    [ ] route: logout a user
-    [ ] route: get info on a user
-    [ ] route: modify a user
-    [ ] route: delete a user
+    [ ] model: email, real name (f+l), pw, groups, pw reset token, tokens
+    [X] route: create new user
+    [X] route: login a user
+    [X] route: logout a user
+    [X] route: get info on a user
+    [X] route: modify a user
+    [X] route: delete a user
     [ ] route: send password reset email
-    [ ] route: reset password
+    [X] route: reset password
     [ ] include groups
+    [ ] finish deleteOne?
+    [ ] do we want to be able to delete users? could cause issues when looking back on previous years
 
 GROUP
 
@@ -41,3 +44,4 @@ GAME
 
 OTHER
     [ ] process.env.ADMIN_PASSKEY
+    [ ] process.env.JSON_WEB_TOKEN_SECRET

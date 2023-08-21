@@ -17,14 +17,14 @@ const auth = async (req, res, next) => {
             throw 'Invalid Token'
         }
 
-        // confirm within 1 week time period
+        // confirm within 10 week time period
         usedToken = user.loginTokens.find(item => {
             return item.token == token
         })
         curDate = Date.now()
         diffMinutes = Math.round((curDate - usedToken.timestamp) / 60000)
         minIn1Month = 60*24*30 // min/hr * hr/day * day/month = min/month
-        if (diffMinutes >= minIn1Month) {
+        if (diffMinutes >= minIn1Month*10) {
             throw 'Token Timed Out'
         }
 
